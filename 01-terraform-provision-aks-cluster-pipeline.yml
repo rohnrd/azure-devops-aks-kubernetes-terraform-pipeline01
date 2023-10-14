@@ -21,49 +21,6 @@ stages:
       - task: PublishPipelineArtifact@1
         displayName: Publish Artifacts
         inputs:
-          targetPath: '$(System.DefaultWorkingDirectory)/terraform-manifests'
+          targetPath: '$(System.DefaultWorkingDirectory)'
           artifact: 'terraform-manifests-out'
           publishLocation: 'pipeline'
-      - task: TerraformInstaller@1
-        inputs:
-          terraformVersion: 'latest'
-      - task: TerraformCLI@1
-        inputs:
-          command: 'init'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-manifests'
-          backendType: 'azurerm'
-          backendServiceArm: 'terraform-aks-azurerm-svc-con'
-          backendAzureRmResourceGroupName: 'terraformstateronrg045'
-          backendAzureRmStorageAccountName: 'terraformstoragerg045'
-          backendAzureRmContainerName: 'tfstatefiles-v45'
-          backendAzureRmKey: 'aks-base.tfstate'
-          allowTelemetryCollection: false
-      - task: TerraformCLI@1
-        inputs:
-          command: 'validate'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-manifests'
-          allowTelemetryCollection: false
-- stage: DeployAKSClusters
-  jobs:
-    - deployment: DeployDevAKSCluster
-      displayName: DeployDevAKSCluster
-      pool:
-        vmImage: 'ubuntu-latest'
-      environment: $(DEV_ENVIRONMENT)      
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - task: DownloadSecureFile@1
-              inputs:
-                secureFile: 'aks-terraform-devops-ssh-key-ububtu.pub'
-            - task: TerraformCLI@1
-              inputs:
-                command: 'init'
-                workingDirectory: '$(Pipeline.Workspace)/terraform-manifests-out'
-                backendType: 'azurerm'
-                backendServiceArm: 'terraform-aks-azurerm-svc-con'
-                backendAzureRmResourceGroupName: 'terraformstateronrg045'
-                backendAzureRmStorageAccountName: 'terraformstoragerg045'
-                backendAzureRmContainerName: 'tfstatefiles-v45'
-                allowTelemetryCollection: false
